@@ -1,13 +1,11 @@
 // Importing necessary hooks and utilities
 import { useRef, useMemo, useEffect, useState } from "react"; // React hooks
-import { useControls } from "leva"; // Leva for UI controls
 import { debounce } from "lodash"; // For debouncing resize events
 
 // Importing 3D utilities from Three.js and @react-three/fiber
 import * as THREE from "three"; // Core Three.js library
-import { PointLightHelper } from "three"; // Helper for visualizing point lights
 import { useFrame, useThree } from "@react-three/fiber"; // React Three Fiber for rendering and animation
-import { useHelper, Html } from "@react-three/drei"; // Drei is a set of useful abstractions for React Three Fiber
+import { Html } from "@react-three/drei"; // Drei is a set of useful abstractions for React Three Fiber
 import CustomShaderMaterial from "three-custom-shader-material"; // A custom shader material for Three.js
 import vertexShader from "./shaders/vertex.glsl"; // Vertex shader (for manipulating vertex data)
 import fragmentShader from "./shaders/fragment.glsl"; // Fragment shader (for manipulating pixel colors)
@@ -49,20 +47,8 @@ const useDomToCanvas = (domEl) => {
 function Lights() {
   const pointLightRef = useRef(); // Ref to store the light object
 
-  // Using the helper from Drei to visualize the point light in the 3D scene
-  useHelper(pointLightRef, PointLightHelper, 0.7, "cyan");
-
-  // Using Leva for light control
-  const config = useControls("Lights", {
-    color: "#ffffff", // Light color
-    intensity: { value: 30, min: 0, max: 5000, step: 0.01 }, // Intensity of the light
-    distance: { value: 12, min: 0, max: 100, step: 0.1 }, // Distance of the light's effect
-    decay: { value: 1, min: 0, max: 5, step: 0.1 }, // Decay of the light over distance
-    position: { value: [2, 4, 6] }, // Position of the light in 3D space
-  });
-
-  // Returning the point light with the configured properties
-  return <pointLight ref={pointLightRef} {...config} />;
+  // Returning the point light (you can modify this later for Framer-specific lighting, if necessary)
+  return <pointLight ref={pointLightRef} color="#ffffff" intensity={30} distance={12} decay={1} position={[2, 4, 6]} />;
 }
 
 // Main Scene component where the 3D objects and shaders are set up
@@ -83,7 +69,6 @@ function Scene() {
     [textureDOM] // Recompute when textureDOM changes
   );
 
-  // Mouse lerping for smoother mouse interaction
   const mouseLerped = useRef({ x: 0, y: 0 });
 
   // Using useFrame to update the mouse position every frame for animation
@@ -101,14 +86,9 @@ function Scene() {
     <>
       {/* Html component from Drei: Allows for DOM elements in 3D space */}
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
-        {/* DOM element (text) to be used as texture for 3D plane */}
+        {/* This DOM element will be replaced by the content from Framer */}
         <div ref={(el) => setDomEl(el)} className="dom-element">
-          <p className="flex flex-col">
-            WHEN <br />
-            WILL <br />
-            WE <br />
-            MEET ?<br />
-          </p>
+          {/* No need for hardcoded content here. Framer will provide dynamic content */}
         </div>
       </Html>
 
@@ -129,7 +109,7 @@ function Scene() {
         <Lights /> {/* Adding the lights to the scene */}
       </mesh>
     </>
-  );
+  ); 
 }
 
 export default Scene;
