@@ -72,13 +72,52 @@ function Scene() {
     materialRef.current.uniforms.uMouse.value.y = mouseLerped.current.y;
   });
 
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Check if the message is coming from the expected origin (Framer)
+      console.log("Received message from:", event.origin); // Log the origin of the message
+      if (event.origin !== "https://batty-cv.framer.ai") {
+        console.warn("Received message from an unexpected origin:", event.origin);
+        return;
+      }
+
+      // Handle the received message
+      if (event.data.type === "setElement") {
+        console.log("Message type 'setElement' received");
+
+        // Only set the initial element to be used inside the iframe
+        const { targetElement, elementDimensions } = event.data;
+        console.log("Received targetElement:", targetElement);
+        console.log("Received elementDimensions:", elementDimensions);
+
+        // At this point, do not manipulate the .dom-element on GitHub Pages
+        // Initial DOM setup should already have occurred when the iframe was loaded
+
+        // Log that the element setup has been completed on GitHub Pages
+        console.log("Element setup complete on GitHub Pages, no further DOM updates after initial load.");
+      } else {
+        console.warn("Received message with unknown type:", event.data.type);
+      }
+    };
+
+    // Listen for messages from the Framer iframe
+    console.log("Setting up message listener for 'setElement' events");
+    window.addEventListener("message", handleMessage);
+
+    // Clean up listener when component is unmounted
+    return () => {
+      console.log("Cleaning up message listener");
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [domEl]);
+
   return (
     <>
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
             setDomEl(el);
-            console.log("DOM element ref set: ", el); 
+            console.log("DOM element ref set: ", el); // Debug log when DOM element ref is set
           }}
           className="dom-element"
           style={{
