@@ -1,36 +1,33 @@
-import { useRef, useMemo, useEffect, useState } from "react"; // React hooks
-import { debounce } from "lodash"; // For debouncing resize events
-import * as THREE from "three"; // Core Three.js library
-import { useFrame, useThree } from "@react-three/fiber"; // React Three Fiber for rendering and animation
-import { Html } from "@react-three/drei"; // Drei is a set of useful abstractions for React Three Fiber
-import CustomShaderMaterial from "three-custom-shader-material"; // A custom shader material for Three.js
-import vertexShader from "./shaders/vertex.glsl"; // Vertex shader (for manipulating vertex data)
-import fragmentShader from "./shaders/fragment.glsl"; // Fragment shader (for manipulating pixel colors)
-import html2canvas from "html2canvas"; // To capture DOM elements as a canvas texture
+import { useRef, useMemo, useEffect, useState } from "react"; 
+import { debounce } from "lodash"; 
+import * as THREE from "three"; 
+import { useFrame, useThree } from "@react-three/fiber"; 
+import { Html } from "@react-three/drei"; 
+import CustomShaderMaterial from "three-custom-shader-material"; 
+import vertexShader from "./shaders/vertex.glsl"; 
+import fragmentShader from "./shaders/fragment.glsl"; 
+import html2canvas from "html2canvas"; 
 
 // Custom hook to convert a DOM element into a Three.js texture
 const useDomToCanvas = (domEl) => {
-  const [texture, setTexture] = useState(); // State to store the texture
+  const [texture, setTexture] = useState(); 
 
   useEffect(() => {
     if (!domEl) return;
 
-    // Function to capture DOM element as a canvas
     const convertDomToCanvas = async () => {
       try {
         console.log("Capturing DOM element as canvas texture...");
-        const canvas = await html2canvas(domEl, { backgroundColor: null, useCORS: true });
-        setTexture(new THREE.CanvasTexture(canvas)); // Convert to Three.js texture
+        const canvas = await html2canvas(domEl, { backgroundColor: null });
+        setTexture(new THREE.CanvasTexture(canvas)); 
         console.log("Canvas captured and texture updated.");
       } catch (error) {
         console.error("Error capturing DOM element:", error);
       }
     };
 
-    // Initial conversion on first render
     convertDomToCanvas();
 
-    // Debounced resize handler to update the texture when the window resizes
     const debouncedResize = debounce(() => {
       convertDomToCanvas();
     }, 100);
@@ -40,22 +37,20 @@ const useDomToCanvas = (domEl) => {
     return () => {
       window.removeEventListener("resize", debouncedResize);
     };
-  }, [domEl]); // Effect depends on the DOM element
+  }, [domEl]);
 
-  return texture; // Return the texture
+  return texture; 
 };
 
-// Lights component
 function Lights() {
   const pointLightRef = useRef();
-
   return <pointLight ref={pointLightRef} color="#ffffff" intensity={30} distance={12} decay={1} position={[2, 4, 6]} />;
 }
 
 function Scene() {
   const state = useThree();
   const { width, height } = state.viewport;
-  const [domEl, setDomEl] = useState(null); // Ref for the DOM element to capture as texture
+  const [domEl, setDomEl] = useState(null); 
   const materialRef = useRef();
   const textureDOM = useDomToCanvas(domEl);
 
@@ -79,25 +74,22 @@ function Scene() {
 
   return (
     <>
-      {/* Html component from Drei: Allows for DOM elements in 3D space */}
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
             setDomEl(el);
-            console.log("DOM element ref set: ", el); // Log when DOM element is set
+            console.log("DOM element ref set: ", el); 
           }}
           className="dom-element"
           style={{
-            fontSize: "clamp(100px, 17vw, 200px)", // Responsive font size using clamp
+            fontSize: "clamp(100px, 17vw, 200px)", 
           }}
         >
           <p>Bulge <br />Effect</p>
-          {/* This will be replaced by dynamic content from Framer */}
         </div>
       </Html>
 
       <mesh>
-        {/* Plane geometry (width x height, with 254 subdivisions) */}
         <planeGeometry args={[width, height, 254, 254]} />
         <CustomShaderMaterial
           ref={materialRef}
