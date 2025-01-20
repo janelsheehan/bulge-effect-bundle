@@ -1,3 +1,6 @@
+// Adding a log at the top to confirm the file has been updated
+console.log("We did something yay!");
+
 // Importing necessary hooks and utilities
 import { useRef, useMemo, useEffect, useState } from "react"; // React hooks
 import { debounce } from "lodash"; // For debouncing resize events
@@ -81,6 +84,13 @@ function Scene() {
     materialRef.current.uniforms.uMouse.value.x = mouseLerped.current.x;
     materialRef.current.uniforms.uMouse.value.y = mouseLerped.current.y;
   });
+
+  // Log when the DOM element is updated
+  useEffect(() => {
+    if (domEl) {
+      console.log("DOM element successfully set:", domEl); // Logging DOM element reference
+    }
+  }, [domEl]); // Only log when `domEl` state changes
 
   return (
     <>
