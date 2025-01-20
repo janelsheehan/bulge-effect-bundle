@@ -17,10 +17,14 @@ const useDomToCanvas = (domEl) => {
 
     // Function to capture DOM element as a canvas
     const convertDomToCanvas = async () => {
-      console.log("Capturing DOM element as canvas texture...");
-      const canvas = await html2canvas(domEl, { backgroundColor: null });
-      setTexture(new THREE.CanvasTexture(canvas)); // Convert to Three.js texture
-      console.log("Canvas captured and texture updated.");
+      try {
+        console.log("Capturing DOM element as canvas texture...");
+        const canvas = await html2canvas(domEl, { backgroundColor: null, useCORS: true });
+        setTexture(new THREE.CanvasTexture(canvas)); // Convert to Three.js texture
+        console.log("Canvas captured and texture updated.");
+      } catch (error) {
+        console.error("Error capturing DOM element:", error);
+      }
     };
 
     // Initial conversion on first render
@@ -80,12 +84,12 @@ function Scene() {
         <div
           ref={(el) => {
             setDomEl(el);
-            console.log("DOM element ref set: ", el);
+            console.log("DOM element ref set: ", el); // Log when DOM element is set
           }}
           className="dom-element"
-          // style={{
-          //   fontSize: "clamp(100px, 17vw, 200px)", // Responsive font size using clamp
-          // }}
+          style={{
+            fontSize: "clamp(100px, 17vw, 200px)", // Responsive font size using clamp
+          }}
         >
           <p>Bulge <br />Effect</p>
           {/* This will be replaced by dynamic content from Framer */}
