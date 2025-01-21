@@ -1,5 +1,3 @@
-console.log("dist worked");
-
 import { useRef, useMemo, useEffect, useState } from "react";
 import { debounce } from "lodash";
 import * as THREE from "three";
@@ -94,10 +92,9 @@ function Scene() {
   // Framer iframe message handling
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log("Message received from:", event.origin); // Log origin to verify if the iframe message is coming from the expected source
-
-      // Log the full message data to ensure we are catching all messages
-      console.log("Received message data:", event.data);
+      // Log to confirm the message listener is triggered
+      console.log("Message received from:", event.origin);
+      console.log("Received message data:", event.data); // Always log message data
 
       // Only allow messages from the Framer iframe origin
       if (event.origin !== "https://batty-cv.framer.ai") {
@@ -184,5 +181,3 @@ function Scene() {
 }
 
 export default Scene;
-
-
