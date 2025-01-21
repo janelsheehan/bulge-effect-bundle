@@ -1,3 +1,5 @@
+console.log("dist worked");
+
 import { useRef, useMemo, useEffect, useState } from "react";
 import { debounce } from "lodash";
 import * as THREE from "three";
@@ -92,8 +94,7 @@ function Scene() {
   // Framer iframe message handling
   useEffect(() => {
     const handleMessage = (event) => {
-      // Ensure the message listener is receiving events
-      console.log("Message received from:", event.origin);
+      console.log("Message received from:", event.origin); // Log origin to verify if the iframe message is coming from the expected source
 
       // Log the full message data to ensure we are catching all messages
       console.log("Received message data:", event.data);
@@ -183,3 +184,5 @@ function Scene() {
 }
 
 export default Scene;
+
+
