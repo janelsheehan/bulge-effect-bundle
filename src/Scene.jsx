@@ -112,7 +112,7 @@ function Scene() {
           console.log("Setting DOM element for the first time...");
           setDomEl(targetElement);
           setInitialized(true); // Mark it as initialized
-          console.log("Element setup complete, no further DOM updates after initial load.");
+          console.log("Element setup complete.");
         } else {
           console.log("Skipping DOM element update, already initialized.");
         }
@@ -121,7 +121,7 @@ function Scene() {
       }
     };
 
-    // Setup message listener, ensure it's set only once
+    // Setup message listener
     console.log("Setting up message listener for 'setElement' events");
     window.addEventListener("message", handleMessage);
 
@@ -130,7 +130,7 @@ function Scene() {
       console.log("Cleaning up message listener");
       window.removeEventListener("message", handleMessage);
     };
-  }, [initialized]); // Ensure this only runs when initialized changes
+  }, [initialized]); // This ensures it only runs when initialized changes
 
   return (
     <>
@@ -138,12 +138,11 @@ function Scene() {
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
-            // Only set the DOM element once, log initialization
-            if (!initialized && el) {
-              console.log("DOM element ref set for the first time: ", el);
+            if (!initialized) {
+              console.log("DOM element ref set for the first time: ", el); // Log the first set
               setDomEl(el); // Set the DOM element only once
-            } else if (initialized) {
-              console.log("Skipping DOM element ref set (already initialized)");
+            } else {
+              console.log("Skipping DOM element ref set (initialized already)");
             }
           }}
           className="dom-element"
