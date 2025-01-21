@@ -19,7 +19,7 @@ const useDomToCanvas = (domEl) => {
       try {
         console.log("Capturing DOM element as canvas texture...");
         const canvas = await html2canvas(domEl, { backgroundColor: null });
-        setTexture(new THREE.CanvasTexture(canvas));
+        setTexture(new THREE.CanvasTexture(canvas)); 
         console.log("Canvas captured and texture updated.");
       } catch (error) {
         console.error("Error capturing DOM element:", error);
@@ -65,8 +65,7 @@ function Scene() {
   const { width, height } = state.viewport;
 
   const [domEl, setDomEl] = useState(null); // This is the DOM element
-  const [initialized, setInitialized] = useState(false); // To track if the element has been initialized
-
+  const [initialized, setInitialized] = useState(false); // Track if the element is initialized
   const materialRef = useRef();
   const textureDOM = useDomToCanvas(domEl); // Get the texture from DOM element
 
@@ -110,9 +109,12 @@ function Scene() {
 
         // Only set the DOM element once to prevent overwriting it
         if (!initialized) {
+          console.log("Setting DOM element for the first time...");
           setDomEl(targetElement);
           setInitialized(true); // Mark it as initialized
           console.log("Element setup complete on GitHub Pages, no further DOM updates after initial load.");
+        } else {
+          console.log("Skipping DOM element update, already initialized.");
         }
       } else {
         console.warn("Received message with unknown type:", event.data.type);
@@ -136,8 +138,12 @@ function Scene() {
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
-            setDomEl(el); // Set the DOM element when it's available
-            console.log("DOM element ref set: ", el); // Debug log
+            if (!initialized) {
+              console.log("DOM element ref set for the first time: ", el); // Log the first set
+              setDomEl(el); // Set the DOM element only once
+            } else {
+              console.log("Skipping DOM element ref set (initialized already)");
+            }
           }}
           className="dom-element"
           style={{
