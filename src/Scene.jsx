@@ -92,8 +92,11 @@ function Scene() {
   // Framer iframe message handling
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log("Received message from:", event.origin);
-      console.log("Message Data:", event.data); // Log full message data to debug
+      // Ensure the message listener is receiving events
+      console.log("Message received from:", event.origin);
+
+      // Log the full message data to ensure we are catching all messages
+      console.log("Received message data:", event.data);
 
       // Only allow messages from the Framer iframe origin
       if (event.origin !== "https://batty-cv.framer.ai") {
@@ -105,19 +108,19 @@ function Scene() {
         console.log("Message type 'setElement' received");
 
         const { targetElement, elementDimensions } = event.data;
-        console.log("Received targetElement:", targetElement);  // Ensure targetElement is not null
+
+        // Log to check if targetElement is being passed correctly
+        console.log("Received targetElement:", targetElement);  // Should be logged if targetElement exists
         console.log("Received elementDimensions:", elementDimensions);
 
-        // Only set the DOM element once to prevent overwriting it
-        if (!initialized) {
-          if (targetElement) {
-            console.log("Setting DOM element for the first time...");
-            setDomEl(targetElement);
-            setInitialized(true); // Mark it as initialized
-            console.log("Element setup complete.");
-          } else {
-            console.warn("Received invalid targetElement: null");
-          }
+        // Check and update the DOM element if it's not already initialized
+        if (!initialized && targetElement) {
+          console.log("Setting DOM element for the first time...");
+          setDomEl(targetElement);
+          setInitialized(true);
+          console.log("Element setup complete.");
+        } else if (!targetElement) {
+          console.warn("Received invalid targetElement: null");  // This log will trigger if targetElement is null
         } else {
           console.log("Skipping DOM element update, already initialized.");
         }
@@ -126,16 +129,16 @@ function Scene() {
       }
     };
 
-    // Setup message listener
+    // Set up the message listener
     console.log("Setting up message listener for 'setElement' events");
     window.addEventListener("message", handleMessage);
 
-    // Cleanup listener when component unmounts
+    // Clean up the listener on unmount
     return () => {
       console.log("Cleaning up message listener");
       window.removeEventListener("message", handleMessage);
     };
-  }, [initialized]); // This ensures it only runs when initialized changes
+  }, [initialized]); // Ensure this effect only runs when initialized state changes
 
   return (
     <>
@@ -143,11 +146,13 @@ function Scene() {
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
-            if (!initialized) {
-              console.log("DOM element ref set for the first time: ", el); // Log the first set
+            if (!initialized && el !== null) {
+              console.log("DOM element ref set for the first time: ", el); // Log when ref is first set
               setDomEl(el); // Set the DOM element only once
+            } else if (el === null) {
+              console.warn("Attempted to set DOM element ref to null."); // Warn if ref is null
             } else {
-              console.log("Skipping DOM element ref set (initialized already)");
+              console.log("Skipping DOM element ref set (already initialized)");
             }
           }}
           className="dom-element"
