@@ -124,6 +124,14 @@ function Scene() {
         } else {
           console.log("Skipping DOM element update, already initialized.");
         }
+
+        // Additional debugging of texture update if present
+        if (targetElement) {
+          console.log("Attempting to create texture from the DOM element...");
+        }
+        if (textureDOM) {
+          console.log("Current texture state:", textureDOM);
+        }
       } else {
         console.warn("Received message with unknown type:", event.data.type);
       }
@@ -138,7 +146,7 @@ function Scene() {
       console.log("Cleaning up message listener");
       window.removeEventListener("message", handleMessage);
     };
-  }, [initialized]); // Ensure this effect only runs when initialized state changes
+  }, [initialized, textureDOM]); // Ensure this effect only runs when initialized state or textureDOM changes
 
   return (
     <>
