@@ -19,7 +19,7 @@ const useDomToCanvas = (domEl) => {
       try {
         console.log("Capturing DOM element as canvas texture...");
         const canvas = await html2canvas(domEl, { backgroundColor: null });
-        setTexture(new THREE.CanvasTexture(canvas)); 
+        setTexture(new THREE.CanvasTexture(canvas));
         console.log("Canvas captured and texture updated.");
       } catch (error) {
         console.error("Error capturing DOM element:", error);
@@ -65,6 +65,8 @@ function Scene() {
   const { width, height } = state.viewport;
 
   const [domEl, setDomEl] = useState(null); // This is the DOM element
+  const [initialized, setInitialized] = useState(false); // To track if the element has been initialized
+
   const materialRef = useRef();
   const textureDOM = useDomToCanvas(domEl); // Get the texture from DOM element
 
@@ -106,11 +108,12 @@ function Scene() {
         console.log("Received targetElement:", targetElement);
         console.log("Received elementDimensions:", elementDimensions);
 
-        // Set the DOM element for texture generation
-        setDomEl(targetElement);
-
-        // Log successful setup
-        console.log("Element setup complete on GitHub Pages, no further DOM updates after initial load.");
+        // Only set the DOM element once to prevent overwriting it
+        if (!initialized) {
+          setDomEl(targetElement);
+          setInitialized(true); // Mark it as initialized
+          console.log("Element setup complete on GitHub Pages, no further DOM updates after initial load.");
+        }
       } else {
         console.warn("Received message with unknown type:", event.data.type);
       }
@@ -125,7 +128,7 @@ function Scene() {
       console.log("Cleaning up message listener");
       window.removeEventListener("message", handleMessage);
     };
-  }, [domEl]); // Make sure it runs when domEl changes
+  }, [initialized]); // This ensures it only runs when initialized changes
 
   return (
     <>
