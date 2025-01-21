@@ -87,18 +87,18 @@ function Scene() {
     mouseLerped.current.y = THREE.MathUtils.lerp(mouseLerped.current.y, mouse.y, 0.1);
     materialRef.current.uniforms.uMouse.value.x = mouseLerped.current.x;
     materialRef.current.uniforms.uMouse.value.y = mouseLerped.current.y;
+    
+    // Log mouse position updates
+    console.log("Updating mouse position in shader");
+    console.log("Lerping mouse position:", mouseLerped.current);
   });
 
   // Framer iframe message handling
   useEffect(() => {
     const handleMessage = (event) => {
-      // Ensure the message listener is receiving events
       console.log("Message received from:", event.origin);
-
-      // Log the full message data to ensure we are catching all messages
       console.log("Received message data:", event.data);
 
-      // Only allow messages from the Framer iframe origin
       if (event.origin !== "https://batty-cv.framer.ai") {
         console.warn("Received message from an unexpected origin:", event.origin);
         return;
@@ -108,24 +108,20 @@ function Scene() {
         console.log("Message type 'setElement' received");
 
         const { targetElement, elementDimensions } = event.data;
-
-        // Log to check if targetElement is being passed correctly
-        console.log("Received targetElement:", targetElement);  // Should be logged if targetElement exists
+        console.log("Received targetElement:", targetElement);
         console.log("Received elementDimensions:", elementDimensions);
 
-        // Check and update the DOM element if it's not already initialized
         if (!initialized && targetElement) {
           console.log("Setting DOM element for the first time...");
           setDomEl(targetElement);
           setInitialized(true);
           console.log("Element setup complete.");
         } else if (!targetElement) {
-          console.warn("Received invalid targetElement: null");  // This log will trigger if targetElement is null
+          console.warn("Received invalid targetElement: null");
         } else {
           console.log("Skipping DOM element update, already initialized.");
         }
 
-        // Additional debugging of texture update if present
         if (targetElement) {
           console.log("Attempting to create texture from the DOM element...");
         }
@@ -137,16 +133,14 @@ function Scene() {
       }
     };
 
-    // Set up the message listener
     console.log("Setting up message listener for 'setElement' events");
     window.addEventListener("message", handleMessage);
 
-    // Clean up the listener on unmount
     return () => {
       console.log("Cleaning up message listener");
       window.removeEventListener("message", handleMessage);
     };
-  }, [initialized, textureDOM]); // Ensure this effect only runs when initialized state or textureDOM changes
+  }, [initialized, textureDOM]);
 
   return (
     <>
