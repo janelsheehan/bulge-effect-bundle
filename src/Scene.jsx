@@ -17,31 +17,31 @@ const useDomToCanvas = (domEl) => {
 
     const convertDomToCanvas = async () => {
       try {
-        console.log("Capturing DOM element as canvas texture...");
+        console.log("Converting DOM element to canvas...");
         const canvas = await html2canvas(domEl, { backgroundColor: null });
         setTexture(new THREE.CanvasTexture(canvas));
-        console.log("Canvas captured and texture updated.");
+        console.log("Texture created and applied:", canvas);
       } catch (error) {
-        console.error("Error capturing DOM element:", error);
+        console.error("Error converting DOM to canvas:", error);
       }
     };
 
-    // Initial conversion when domEl is available
+    // Convert DOM element to texture
     convertDomToCanvas();
 
     // Debounce resize to avoid excessive calls
     const debouncedResize = debounce(() => {
-      console.log("Resizing and updating texture...");
+      console.log("Window resized, updating texture...");
       convertDomToCanvas();
     }, 100);
 
-    // Event listener for window resizing
+    // Resize listener
     window.addEventListener("resize", debouncedResize);
 
     return () => {
       window.removeEventListener("resize", debouncedResize);
     };
-  }, [domEl]); // This will rerun whenever domEl changes
+  }, [domEl]);
 
   return texture;
 };
@@ -64,12 +64,12 @@ function Scene() {
   const state = useThree();
   const { width, height } = state.viewport;
 
-  const [domEl, setDomEl] = useState(null); // This is the DOM element
+  const [domEl, setDomEl] = useState(null); // The DOM element reference
   const [initialized, setInitialized] = useState(false); // Track if the element is initialized
   const materialRef = useRef();
-  const textureDOM = useDomToCanvas(domEl); // Get the texture from DOM element
+  const textureDOM = useDomToCanvas(domEl); // Get texture from the DOM element
 
-  // Memoize uniforms to ensure proper updates to the shader
+  // Memoized uniforms for shader
   const uniforms = useMemo(
     () => ({
       uTexture: { value: textureDOM },
@@ -78,7 +78,7 @@ function Scene() {
     [textureDOM]
   );
 
-  // Lerp mouse position for smooth movement
+  // Smoothly lerp mouse position for shader
   const mouseLerped = useRef({ x: 0, y: 0 });
 
   useFrame((state, delta) => {
@@ -87,23 +87,23 @@ function Scene() {
     mouseLerped.current.y = THREE.MathUtils.lerp(mouseLerped.current.y, mouse.y, 0.1);
     materialRef.current.uniforms.uMouse.value.x = mouseLerped.current.x;
     materialRef.current.uniforms.uMouse.value.y = mouseLerped.current.y;
-    
-    // Log mouse position updates
-    console.log("Updating mouse position in shader");
+
+    // Debug logs for mouse movement
     console.log("Lerping mouse position:", mouseLerped.current);
   });
 
-  // Framer iframe message handling
+  // Message listener from Framer
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("Message received from:", event.origin);
-      console.log("Received message data:", event.data);
+      console.log("Received message:", event.data);
 
       if (event.origin !== "https://batty-cv.framer.ai") {
-        console.warn("Received message from an unexpected origin:", event.origin);
+        console.warn("Message origin mismatch:", event.origin);
         return;
       }
 
+      // Handle setElement message type
       if (event.data.type === "setElement") {
         console.log("Message type 'setElement' received");
 
@@ -111,50 +111,43 @@ function Scene() {
         console.log("Received targetElement:", targetElement);
         console.log("Received elementDimensions:", elementDimensions);
 
+        // Update DOM element if not already initialized
         if (!initialized && targetElement) {
           console.log("Setting DOM element for the first time...");
           setDomEl(targetElement);
           setInitialized(true);
-          console.log("Element setup complete.");
-        } else if (!targetElement) {
-          console.warn("Received invalid targetElement: null");
+          console.log("DOM element initialized:", targetElement);
         } else {
-          console.log("Skipping DOM element update, already initialized.");
-        }
-
-        if (targetElement) {
-          console.log("Attempting to create texture from the DOM element...");
-        }
-        if (textureDOM) {
-          console.log("Current texture state:", textureDOM);
+          console.log("Skipping DOM element update (already initialized).");
         }
       } else {
-        console.warn("Received message with unknown type:", event.data.type);
+        console.warn("Received unknown message type:", event.data.type);
       }
     };
 
-    console.log("Setting up message listener for 'setElement' events");
+    // Add message event listener
+    console.log("Setting up message listener...");
     window.addEventListener("message", handleMessage);
 
     return () => {
-      console.log("Cleaning up message listener");
+      console.log("Cleaning up message listener...");
       window.removeEventListener("message", handleMessage);
     };
-  }, [initialized, textureDOM]);
+  }, [initialized]);
 
   return (
     <>
-      {/* HTML content displayed as an overlay */}
+      {/* HTML content as an overlay */}
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
             if (!initialized && el !== null) {
-              console.log("DOM element ref set for the first time: ", el); // Log when ref is first set
-              setDomEl(el); // Set the DOM element only once
+              console.log("DOM element ref set:", el);
+              setDomEl(el);
             } else if (el === null) {
-              console.warn("Attempted to set DOM element ref to null."); // Warn if ref is null
+              console.warn("DOM element ref is null.");
             } else {
-              console.log("Skipping DOM element ref set (already initialized)");
+              console.log("Skipping DOM element ref set (already initialized).");
             }
           }}
           className="dom-element"
