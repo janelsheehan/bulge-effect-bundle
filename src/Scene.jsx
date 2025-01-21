@@ -18,6 +18,13 @@ const useDomToCanvas = (domEl) => {
     const convertDomToCanvas = async () => {
       try {
         console.log("Converting DOM element to canvas...");
+
+        // Log if the texture already exists
+        if (texture) {
+          console.log("Texture already exists, skipping creation.");
+          return;
+        }
+
         const canvas = await html2canvas(domEl, { backgroundColor: null });
         setTexture(new THREE.CanvasTexture(canvas));
         console.log("Texture created and applied:", canvas);
@@ -41,7 +48,7 @@ const useDomToCanvas = (domEl) => {
     return () => {
       window.removeEventListener("resize", debouncedResize);
     };
-  }, [domEl]);
+  }, [domEl, texture]); // Only run when domEl changes
 
   return texture;
 };
@@ -75,7 +82,7 @@ function Scene() {
       uTexture: { value: textureDOM },
       uMouse: { value: new THREE.Vector2(0, 0) },
     }),
-    [textureDOM]
+    [textureDOM] // Memoize only when texture changes
   );
 
   // Smoothly lerp mouse position for shader
@@ -90,6 +97,18 @@ function Scene() {
 
     // Debug logs for mouse movement
     console.log("Lerping mouse position:", mouseLerped.current);
+
+    // Debug log for texture availability in useFrame
+    if (textureDOM) {
+      console.log("Texture is available in useFrame:", textureDOM);
+    }
+  });
+
+  // Log Re-renders
+  const renderCount = useRef(0);
+  useEffect(() => {
+    renderCount.current++;
+    console.log(`Scene component re-rendered: ${renderCount.current} times`);
   });
 
   // Message listener from Framer
@@ -103,7 +122,7 @@ function Scene() {
         return;
       }
 
-      // Handle setElement message type
+      // Handle 'setElement' message type
       if (event.data.type === "setElement") {
         console.log("Message type 'setElement' received");
 
@@ -111,17 +130,15 @@ function Scene() {
         console.log("Received targetElement:", targetElement);
         console.log("Received elementDimensions:", elementDimensions);
 
-        // Update DOM element if not already initialized
-        if (!initialized && targetElement) {
+        // Log initialization status and set DOM element only once
+        if (!initialized && targetElement && domEl !== targetElement) {
           console.log("Setting DOM element for the first time...");
           setDomEl(targetElement);
           setInitialized(true);
           console.log("DOM element initialized:", targetElement);
         } else {
-          console.log("Skipping DOM element update (already initialized).");
+          console.log("Skipping DOM element update (already initialized or same element).");
         }
-      } else {
-        console.warn("Received unknown message type:", event.data.type);
       }
     };
 
@@ -133,7 +150,7 @@ function Scene() {
       console.log("Cleaning up message listener...");
       window.removeEventListener("message", handleMessage);
     };
-  }, [initialized]);
+  }, [initialized, domEl]);  // Only listen once the element is initialized
 
   return (
     <>
@@ -141,13 +158,14 @@ function Scene() {
       <Html zIndexRange={[-1, -10]} prepend fullscreen>
         <div
           ref={(el) => {
-            if (!initialized && el !== null) {
+            // This will only execute once when initialized is false
+            if (!initialized && el !== null && domEl !== el) {
               console.log("DOM element ref set:", el);
               setDomEl(el);
             } else if (el === null) {
               console.warn("DOM element ref is null.");
             } else {
-              console.log("Skipping DOM element ref set (already initialized).");
+              console.log("Skipping DOM element ref set (already initialized or same element).");
             }
           }}
           className="dom-element"
