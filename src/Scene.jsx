@@ -19,7 +19,7 @@ const useDomToCanvas = (domEl) => {
       try {
         console.log("Capturing DOM element as canvas texture...");
         const canvas = await html2canvas(domEl, { backgroundColor: null });
-        setTexture(new THREE.CanvasTexture(canvas)); 
+        setTexture(new THREE.CanvasTexture(canvas));
         console.log("Canvas captured and texture updated.");
       } catch (error) {
         console.error("Error capturing DOM element:", error);
@@ -92,9 +92,11 @@ function Scene() {
   // Framer iframe message handling
   useEffect(() => {
     const handleMessage = (event) => {
-      // Log to confirm the message listener is triggered
+      // Ensure the message listener is receiving events
       console.log("Message received from:", event.origin);
-      console.log("Received message data:", event.data); // Always log message data
+
+      // Log the full message data to ensure we are catching all messages
+      console.log("Received message data:", event.data);
 
       // Only allow messages from the Framer iframe origin
       if (event.origin !== "https://batty-cv.framer.ai") {
