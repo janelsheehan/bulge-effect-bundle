@@ -93,6 +93,7 @@ function Scene() {
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("Received message from:", event.origin);
+      console.log("Message Data:", event.data); // Log full message data to debug
 
       // Only allow messages from the Framer iframe origin
       if (event.origin !== "https://batty-cv.framer.ai") {
@@ -104,15 +105,19 @@ function Scene() {
         console.log("Message type 'setElement' received");
 
         const { targetElement, elementDimensions } = event.data;
-        console.log("Received targetElement:", targetElement);
+        console.log("Received targetElement:", targetElement);  // Ensure targetElement is not null
         console.log("Received elementDimensions:", elementDimensions);
 
         // Only set the DOM element once to prevent overwriting it
         if (!initialized) {
-          console.log("Setting DOM element for the first time...");
-          setDomEl(targetElement);
-          setInitialized(true); // Mark it as initialized
-          console.log("Element setup complete.");
+          if (targetElement) {
+            console.log("Setting DOM element for the first time...");
+            setDomEl(targetElement);
+            setInitialized(true); // Mark it as initialized
+            console.log("Element setup complete.");
+          } else {
+            console.warn("Received invalid targetElement: null");
+          }
         } else {
           console.log("Skipping DOM element update, already initialized.");
         }
